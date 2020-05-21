@@ -1,4 +1,4 @@
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score
 import numpy as np
@@ -6,7 +6,15 @@ import pandas as pd
 import hashlib
 from copy import deepcopy
 from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.feature_selection import SelectFromModel
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 
 def train_test_splitter(X, y, percent, r=3):
     X_train = deepcopy(X)
@@ -44,8 +52,8 @@ def discretization(x, feature, ranges):
 
 data = pd.read_csv("D:\Bachelor's final year\Second Semester\ML\project\HCV-Egy-Data.csv")
 y_classes = pd.DataFrame(np.asarray(data['Baselinehistological staging']))
-y_regression = pd.DataFrame(np.asarray(data['Baseline histological Grading']))
-data = data.drop('Baselinehistological staging', axis=1)
+#y_regression = pd.DataFrame(np.asarray(data['Baseline histological Grading']))
+#data = data.drop('Baselinehistological staging', axis=1)
 data = data.drop('Baseline histological Grading', axis=1)
 
 # discretization
@@ -103,14 +111,36 @@ data = data.drop('AST 1', axis=1)
 data = data.drop('Plat', axis=1)
 data = data.drop('RBC', axis=1)
 
+
 sss = StratifiedShuffleSplit(n_splits=5, test_size=0.2, random_state=0)
 sss.get_n_splits(data, y_classes)
 for train_index, test_index in sss.split(data, y_classes):
     X_train, X_test = data.iloc[train_index], data.iloc[test_index]
     y_train, y_test = y_classes.iloc[train_index], y_classes.iloc[test_index]
 
-#X_train, y_train, X_test, y_test = train_test_splitter(data, y_classes, 0.2)
-clf = SVC().fit(X_train, y_train.values.ravel())
+scaler = StandardScaler()
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 
+#clf = MLPClassifier(solver='lbfgs', alpha=1e-2, hidden_layer_sizes=(5, 2), random_state=1, max_iter=1000, learning_rate_init=0.01)
+clf = RandomForestClassifier(n_estimators=1000, max_leaf_nodes=4)
+clf = clf.fit(X_train, y_train.values.ravel())
+model = SelectFromModel(clf, prefit=True)
+X_train = model.transform(X_train)
+X_test = model.transform(X_test)
+#clf = RandomForestClassifier(n_estimators=1000, max_leaf_nodes=10)
+#clf = SVC(C=1, kernel='rbf', gamma='scale')
+#clf = DecisionTreeClassifier(max_depth=2)
+#clf = KNeighborsClassifier(700)
+#clf = OneVsOneClassifier(KNeighborsClassifier(50))
+clf = AdaBoostClassifier(base_estimator=clf, algorithm='SAMME', n_estimators=1000, learning_rate=1)
+clf.fit(X_train, y_train.values.ravel())
+predicted = clf.predict(X_train)
+accuracy_score(predicted, y_train)
+
+#X_train, y_train, X_test, y_test = train_test_splitter(data, y_classes, 0.2)
+#clf = SVC().fit(X_train, y_train.values.ravel())
+clf.fit(X_train, y_train.values.ravel())
 predicted = clf.predict(X_test)
 accuracy_score(predicted, y_test)
