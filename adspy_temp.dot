@@ -1,0 +1,16 @@
+digraph Tree {
+node [shape=box, style="filled", color="black"] ;
+0 [label="Baselinehistological staging <= 3.5\nsamples = 1108\nvalue = [269, 266, 284, 289]\nclass = 4", fillcolor="#fffeff"] ;
+1 [label="Baselinehistological staging <= 2.5\nsamples = 819\nvalue = [269, 266, 284, 0]\nclass = 3", fillcolor="#fafcfe"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="Baselinehistological staging <= 1.5\nsamples = 535\nvalue = [269, 266, 0, 0]\nclass = 1", fillcolor="#fffefd"] ;
+1 -> 2 ;
+3 [label="samples = 269\nvalue = [269, 0, 0, 0]\nclass = 1", fillcolor="#e58139"] ;
+2 -> 3 ;
+4 [label="samples = 266\nvalue = [0, 266, 0, 0]\nclass = 2", fillcolor="#47e539"] ;
+2 -> 4 ;
+5 [label="samples = 284\nvalue = [0, 0, 284, 0]\nclass = 3", fillcolor="#399de5"] ;
+1 -> 5 ;
+6 [label="samples = 289\nvalue = [0, 0, 0, 289]\nclass = 4", fillcolor="#d739e5"] ;
+0 -> 6 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+}
